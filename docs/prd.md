@@ -1,9 +1,9 @@
 # Product Requirements Document  
 **Product**: **AIC Flow – Visual Workflow Automation Platform**  
-**Version**: 0.1 (Draft)  
-**Author**: ChatGPT
+**Version**: 0.1 
+**Author**: ChatGPT, Shaojie Jiang
 **Date**: 1 May 2025  
-**Reviewers**: Shaojie Jiang  
+**Reviewers**: ChatGPT, Shaojie Jiang  
 
 | Rev | Date       | Author        | Notes                       |
 |-----|------------|---------------|-----------------------------|
@@ -14,29 +14,40 @@
 ## 1 · Overview  
 
 ### 1.1 Problem Statement  
-Technical and non-technical users struggle to connect heterogeneous data sources, AI agents, and third-party services without writing glue code. Existing tools are either code-first (steep learning curve) or single-purpose SaaS (limited flexibility).
+Technical and non-technical users struggle to connect heterogeneous data sources, AI agents, and third-party services without writing glue code.
+Existing tools are either code-first (expensive to build, deploy, and maintain, like LangGraph) or lack of AI-centric features (like n8n).
+Especially, there is no tool that is both easy to use and extensible for developers.
 
 ### 1.2 Goal  
 Provide a **drag-and-drop, browser-based workflow builder** that lets users design, test, and run complex automations (including AI-centric tasks) in minutes, while keeping the platform extensible for developers.
+Benefiting from the joint force of LangGraph and React Flow, AIC Flow is designed to be both easy to use for majority of routine tasks (low-code) and capable of tasks with much higher complexity (code-first).
+With first-class support for Python, AIC Flow is also designed to be compatible with the large ecosystem of ML/AI libraries.
 
-### 1.3 Success Criteria (KPIs)  
-| Objective | Metric | Target @ 90 days post-GA |
-|-----------|--------|---------------------------|
-|Reduce workflow build time|Median time to first successful run| ≤ 15 min|
-|Reliability|Execution success rate| ≥ 98 %|
-|Supportability|Mean error-resolution time| ≤ 10 min|
-|Adoption|Weekly active builders| ≥ 500|
-|Performance|Median workflow throughput| ≥ 50 nodes / sec|
+### 1.3 Scope
+* Fundamental node types (see functional requirements for details)
+* Credential vault
+* Configuration versioning (git-like)
+
+### 1.4 Non-scope for v1
+* All nodes not listed above
+* JS code node
+* JS backend
+* AI-assisted node or workflow generation
+* Plugin marketplace
+* Mobile app
+* Enterprise SSO
+* Native mobile authoring application
+* Multi-tenant admin panel for Enterprise SSO
+* HIPAA / FedRAMP compliance
+* In-product AI-assisted node suggestion (planned as future enhancement)
 
 ---
 
 ## 2 · Assumptions & Constraints  
 
+* Higher requirements for developers as frontend uses React and TypeScript, backend uses Python, and both are needed when building custom nodes.
 * SPA built on **React 18+, React Flow, TypeScript**.  
-* Cloud-hosted FastAPI backend (Python 3.12); on-prem deployment is *out of scope* for v1.  
-* Execution engine relies on **LangGraph** and **Celery** workers.  
-* Early adopters familiar with low-code paradigms.  
-* GDPR compliance required; HIPAA is *not* in scope for v1.  
+* FastAPI backend, execution engine relies on **LangGraph** and **Celery** workers.  
 
 ---
 
@@ -44,10 +55,13 @@ Provide a **drag-and-drop, browser-based workflow builder** that lets users desi
 
 | Persona | Need (User Story) |
 |---------|-------------------|
-|**Ops Engineer (Olivia)**|“As an ops engineer, I want to schedule nightly ETL pipelines so that data is ready for BI dashboards by 6 AM.”|
-|**Data Scientist (Diego)**|“As a data scientist, I want to trigger an LLM-based enrichment step when a webhook fires, so that I can classify inbound tickets automatically.”|
-|**Automation Consultant (Arun)**|“As a consultant, I want to package reusable sub-workflows and share them with clients from a marketplace.”|
-|**Backend Developer (Bao)**|“As a developer, I want to extend the platform with custom Python nodes, so that I can call proprietary services.”|
+|**Business Analyst (Beth)**|"As a business analyst, I want to use the drag-and-drop interface to create automated reports by connecting to our CRM and email system, so I can send weekly performance summaries without writing code."|
+|**Marketing Manager (Maya)**|"As a marketing manager, I want to use pre-built connectors to automatically sync customer data between our email platform and CRM, so I can maintain accurate campaign lists."|
+|**Ops Engineer (Olivia)**|"As an ops engineer, I want to use the scheduling and monitoring features to run nightly ETL pipelines, so I can ensure data is ready for BI dashboards by 6 AM."|
+|**Data Scientist (Diego)**|"As a data scientist, I want to leverage the AI node library and webhook triggers to build LLM-based enrichment workflows, so I can classify inbound tickets automatically."|
+|**Automation Consultant (Arun)**|"As a consultant, I want to use the workflow packaging and marketplace features to create and share reusable sub-workflows with clients."|
+|**Backend Developer (Bao)**|"As a developer, I want to use the Python SDK to create custom nodes that integrate with our proprietary services."|
+|**ML Engineer (Ming)**|"As an ML engineer, I want to use the advanced workflow features and custom node capabilities to build complex AI pipelines with evaluation loops."|
 
 ---
 
@@ -59,24 +73,43 @@ Provide a **drag-and-drop, browser-based workflow builder** that lets users desi
 * Undo / redo (≥ 20 steps).  
 * Multi-select & inline node search.  
 * Mini-map for large flows.
+* Directories for organizing workflows
 
-### 4.2 Node Types  
-* **Input**: REST source, DB query, webhook, cron.  
-* **Processing**: code block, transformation, LLM prompt, loop, condition, sub-workflow.  
-* **Output**: REST sink, file export, notification.  
-* **Custom**: user-packaged plugin nodes (signed).  
+### 4.2 Fundamental Node Types  
+* **Data Sources**:
+  * REST API endpoints
+  * Database queries
+  * Webhook triggers
+  * Cron schedules
+* **Data Sinks**:
+  * REST API calls
+  * File exports
+  * Notifications
+* **Processing**:
+  * Python code blocks
+  * Data transformations
+  * Agent nodes
+* **Control Flow**:
+  * If-else conditions
+  * For-each loops
+  * While loops
+* **Integration**:
+  * Sub-workflow calls
+  * Chat message handling
+* **Custom**: user-packaged plugin nodes (signed)
 
 ### 4.3 Workflow Management  
 * Save, duplicate, import/export (JSON) with semantic version tags.  
 * Template gallery with rating & download counts.  
 * Test-run mode with breakpoint & variable inspector.  
-* Variable / expression editor (JS syntax).  
+* Variable / expression editor (Python syntax).  
+* Run history with logs, metrics, and traces
 
 ### 4.4 Execution Engine  
 * LangGraph-based graph runner with parallel & conditional branches.  
 * At-least-once execution semantics; configurable retries & compensating error-flows.  
 * Execution logs streamed via WebSocket.  
-* Metrics: node-level latency, throughput, error codes.  
+* Metrics: node-level latency, throughput, error codes.
 
 ### 4.5 Integrations & Plugins  
 * Built-in connectors: HTTP, PostgreSQL/MySQL, S3, Google Sheets, Slack, OpenAI.  
@@ -97,7 +130,7 @@ Provide a **drag-and-drop, browser-based workflow builder** that lets users desi
 |Scalability|Horizontal autoscaling of Celery workers; support 1 k concurrent executions with < 5 s queuing delay.|
 |Availability|99.9 % uptime (monthly) excluding scheduled maintenance.|
 |Security|OWASP Top 10 compliance; AES-256 key storage; SOC 2 road-map.|
-|Compliance|GDPR DPA, data residency in EU region.|
+|Compliance|GDPR DPA.|
 |Observability|OpenTelemetry traces; Prometheus metrics dashboard.|
 |Internationalization|English UI v1; i18n-ready string catalog.|
 
@@ -106,18 +139,43 @@ Provide a **drag-and-drop, browser-based workflow builder** that lets users desi
 ## 6 · UX / UI Requirements  
 
 * **Design language**: system-agnostic light/dark mode, accessible color palette (WCAG 2.1 AA).  
-* **Wireframes**: Editor canvas, node inspector, execution console (see Figma link in Appendix).  
-* **Empty-state onboarding**: 3-step guided tour & “Create Demo Flow”.  
+* **Wireframes**: Editor canvas, node inspector, execution console (Figma).  
+* **Empty-state onboarding**: 3-step guided tour & "Create Demo Flow".  
 * Keyboard shortcuts reference drawer.  
 
 ---
 
-## 7 · Out of Scope (v1)  
+## 7 · Success Metrics / KPIs
 
-* Native mobile authoring application.  
-* Multi-tenant admin panel for Enterprise SSO.  
-* HIPAA / FedRAMP compliance.  
-* In-product AI-assisted node suggestion (planned as future enhancement).  
+### 7.1 Community Growth
+* GitHub stars: 1k+ within 6 months
+* Active contributors: 50+ monthly
+* Community PRs merged: 20% of total PRs
+* Discord/Slack members: 2k+ within 6 months
+
+### 7.2 Product Adoption
+* Active workflows: 1k+ within 6 months
+* Workflow executions: 10k+ monthly
+* Node usage distribution: No single node > 40% of total usage
+* Template downloads: 500+ monthly
+
+### 7.3 Technical Health
+* Test coverage: > 80%
+* CI/CD pipeline success rate: > 95%
+* Average response time: < 200ms
+* Critical bug resolution: < 24 hours
+
+### 7.4 Commercial Indicators
+* Enterprise inquiries: 10+ monthly
+* Self-hosted deployments: 50+ within 6 months
+* Community to paid conversion: > 5%
+* Average revenue per user (ARPU): $50/month
+
+### 7.5 User Satisfaction
+* NPS score: > 40
+* Documentation page views: 10k+ monthly
+* Feature request upvotes: 100+ per quarter
+* User retention: > 60% after 3 months
 
 ---
 
@@ -147,17 +205,13 @@ Provide a **drag-and-drop, browser-based workflow builder** that lets users desi
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-|React Flow major API change|Medium|High|Pin version; fork if needed|
-|AI-related compliance updates|Low|High|Quarterly legal review|
-|Marketplace abuse / malicious plugins|Medium|Medium|Code-signing, manual review|
+
 
 ---
 
 ## 11 · Appendices  
 
 * **A.** Figma wireframes link  
-* **B.** API schema (OpenAPI 3)  
-* **C.** Plugin SDK guide  
 
 ---
 
