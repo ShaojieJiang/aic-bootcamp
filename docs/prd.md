@@ -1,220 +1,196 @@
-# Product Requirements Document  
-**Product**: **AIC Flow – Visual Workflow Automation Platform**  
-**Version**: 0.1 
-**Author**: ChatGPT, Shaojie Jiang
-**Date**: 1 May 2025  
-**Reviewers**: ChatGPT, Shaojie Jiang  
+# Product Requirements Document
 
-| Rev | Date       | Author        | Notes                       |
-|-----|------------|---------------|-----------------------------|
-|0.1  |1 May 2025 |ChatGPT   |Initial skeleton             |
+**Product** : **AIC Flow – Visual Workflow Automation Platform**
+**Version** : 0.2 (revision of v0.1)
+**Author** : Shaojie Jiang & ChatGPT
+**Date** : 2 May 2025
+**Reviewers** : Core Engineering & Design teams
 
----
-
-## 1 · Overview  
-
-### 1.1 Problem Statement  
-Technical and non-technical users struggle to connect heterogeneous data sources, AI agents, and third-party services without writing glue code.
-Existing tools are either code-first (expensive to build, deploy, and maintain, like LangGraph) or lack of AI-centric features (like n8n).
-Especially, there is no tool that is both easy to use and extensible for developers.
-
-### 1.2 Goal  
-Provide a **drag-and-drop, browser-based workflow builder** that lets users design, test, and run complex automations (including AI-centric tasks) in minutes, while keeping the platform extensible for developers.
-Benefiting from the joint force of LangGraph and React Flow, AIC Flow is designed to be both easy to use for majority of routine tasks (low-code) and capable of tasks with much higher complexity (code-first).
-With first-class support for Python, AIC Flow is also designed to be compatible with the large ecosystem of ML/AI libraries.
-
-### 1.3 Scope
-* Fundamental node types (see functional requirements for details)
-* Credential vault
-* Configuration versioning (git-like)
-
-### 1.4 Non-scope for v1
-* All nodes not listed above
-* JS code node
-* JS backend
-* AI-assisted node or workflow generation
-* Plugin marketplace
-* Mobile app
-* Enterprise SSO
-* Native mobile authoring application
-* Multi-tenant admin panel for Enterprise SSO
-* HIPAA / FedRAMP compliance
-* In-product AI-assisted node suggestion (planned as future enhancement)
+| Rev | Date       | Author(s)     | Notes            |
+| --- | ---------- | ------------- | ---------------- |
+| 0.1 | 1 May 2025 | Shaojie Jiang | Initial skeleton |
 
 ---
 
-## 2 · Assumptions & Constraints  
+## 1 · Overview
 
-* Higher requirements for developers as frontend uses React and TypeScript, backend uses Python, and both are needed when building custom nodes.
-* SPA built on **React 18+, React Flow, TypeScript**.  
-* FastAPI backend, execution engine relies on **LangGraph** and **Celery** workers.  
+### 1.1 Problem Statement
 
----
+Technical _and_ non-technical users struggle to connect heterogeneous data sources, AI agents, and third-party services without writing glue code.
+Existing tools are either **code-first** (powerful but costly to build, deploy, and maintain—e.g., LangGraph) or **workflow-first** (easy but not AI-centric—e.g., n8n). None delivers both ease-of-use _and_ developer-grade extensibility.
 
-## 3 · User Personas & Key Use Cases  
+### 1.2 Goal
 
-| Persona | Need (User Story) |
-|---------|-------------------|
-|**Business Analyst (Beth)**|"As a business analyst, I want to use the drag-and-drop interface to create automated reports by connecting to our CRM and email system, so I can send weekly performance summaries without writing code."|
-|**Marketing Manager (Maya)**|"As a marketing manager, I want to use pre-built connectors to automatically sync customer data between our email platform and CRM, so I can maintain accurate campaign lists."|
-|**Ops Engineer (Olivia)**|"As an ops engineer, I want to use the scheduling and monitoring features to run nightly ETL pipelines, so I can ensure data is ready for BI dashboards by 6 AM."|
-|**Data Scientist (Diego)**|"As a data scientist, I want to leverage the AI node library and webhook triggers to build LLM-based enrichment workflows, so I can classify inbound tickets automatically."|
-|**Automation Consultant (Arun)**|"As a consultant, I want to use the workflow packaging and marketplace features to create and share reusable sub-workflows with clients."|
-|**Backend Developer (Bao)**|"As a developer, I want to use the Python SDK to create custom nodes that integrate with our proprietary services."|
-|**ML Engineer (Ming)**|"As an ML engineer, I want to use the advanced workflow features and custom node capabilities to build complex AI pipelines with evaluation loops."|
+Deliver a **drag-and-drop browser-based builder** that lets users design, test, and run complex automations—including AI-centric tasks—in minutes, while remaining fully extensible for developers.
 
----
+- Low-code UX powered by **React Flow**.
+- Code-first depth via **LangGraph**, first-class **Python** (and virtual-env) support.
+- Proven patterns for data ops, AI agents, and long-running jobs.
 
-## 4 · Functional Requirements  
+### 1.3 Scope (v1)
 
-### 4.1 Workflow Editor  
-* Drag-and-drop canvas (pan, zoom, grid-snap).  
-* Real-time validation (type, dangling edges).  
-* Undo / redo (≥ 20 steps).  
-* Multi-select & inline node search.  
-* Mini-map for large flows.
-* Directories for organizing workflows
+- Core workflow editor (canvas, validation, history).
+- Fundamental node types (Section 4.2).
+- Credential vault.
+- Git-style versioning of workflows & configs.
 
-### 4.2 Fundamental Node Types  
-* **Data Sources**:
-  * REST API endpoints
-  * Database queries
-  * Webhook triggers
-  * Cron schedules
-* **Data Sinks**:
-  * REST API calls
-  * File exports
-  * Notifications
-* **Processing**:
-  * Python code blocks
-  * Data transformations
-  * Agent nodes
-* **Control Flow**:
-  * If-else conditions
-  * For-each loops
-  * While loops
-* **Integration**:
-  * Sub-workflow calls
-  * Chat message handling
-* **Custom**: user-packaged plugin nodes (signed)
+### 1.4 Out-of-Scope (v1)
 
-### 4.3 Workflow Management  
-* Save, duplicate, import/export (JSON) with semantic version tags.  
-* Template gallery with rating & download counts.  
-* Test-run mode with breakpoint & variable inspector.  
-* Variable / expression editor (Python syntax).  
-* Run history with logs, metrics, and traces
-
-### 4.4 Execution Engine  
-* LangGraph-based graph runner with parallel & conditional branches.  
-* At-least-once execution semantics; configurable retries & compensating error-flows.  
-* Execution logs streamed via WebSocket.  
-* Metrics: node-level latency, throughput, error codes.
-
-### 4.5 Integrations & Plugins  
-* Built-in connectors: HTTP, PostgreSQL/MySQL, S3, Google Sheets, Slack, OpenAI.  
-* OAuth 2 credential vault with role-based access.  
-* Plugin SDK (Python) with marketplace publishing pipeline.  
-
-### 4.6 Community Hub  
-* Discover, vote, and comment on community nodes.  
-* Contributor leaderboard & moderation workflow.  
+- Additional node types not listed in § 4.2.
+- JavaScript code node or JS runtime.
+- AI-assisted workflow generation / node suggestion.
+- Mobile apps (view or authoring).
+- Enterprise SSO & multi-tenant admin.
+- Marketplace with paid plugins.
+- HIPAA / FedRAMP compliance.
 
 ---
 
-## 5 · Non-Functional Requirements  
+## 2 · Assumptions & Constraints
 
-| Category | Requirement |
-|----------|-------------|
-|Performance|Editor interactions ≤ 200 ms (p95); engine throughput ≥ 50 nodes/s per worker.|
-|Scalability|Horizontal autoscaling of Celery workers; support 1 k concurrent executions with < 5 s queuing delay.|
-|Availability|99.9 % uptime (monthly) excluding scheduled maintenance.|
-|Security|OWASP Top 10 compliance; AES-256 key storage; SOC 2 road-map.|
-|Compliance|GDPR DPA.|
-|Observability|OpenTelemetry traces; Prometheus metrics dashboard.|
-|Internationalization|English UI v1; i18n-ready string catalog.|
+- Custom nodes require both React/TypeScript (front-end) and Python (back-end) skills.
+- Single-page app (React 18 + Vite) communicates with a FastAPI back-end.
+- Execution engine relies on LangGraph + Celery workers.
 
 ---
 
-## 6 · UX / UI Requirements  
+## 3 · User Personas & Key Use Cases
 
-* **Design language**: system-agnostic light/dark mode, accessible color palette (WCAG 2.1 AA).  
-* **Wireframes**: Editor canvas, node inspector, execution console (Figma).  
-* **Empty-state onboarding**: 3-step guided tour & "Create Demo Flow".  
-* Keyboard shortcuts reference drawer.  
-
----
-
-## 7 · Success Metrics / KPIs
-
-### 7.1 Community Growth
-* GitHub stars: 1k+ within 6 months
-* Active contributors: 50+ monthly
-* Community PRs merged: 20% of total PRs
-* Discord/Slack members: 2k+ within 6 months
-
-### 7.2 Product Adoption
-* Active workflows: 1k+ within 6 months
-* Workflow executions: 10k+ monthly
-* Node usage distribution: No single node > 40% of total usage
-* Template downloads: 500+ monthly
-
-### 7.3 Technical Health
-* Test coverage: > 80%
-* CI/CD pipeline success rate: > 95%
-* Average response time: < 200ms
-* Critical bug resolution: < 24 hours
-
-### 7.4 Commercial Indicators
-* Enterprise inquiries: 10+ monthly
-* Self-hosted deployments: 50+ within 6 months
-* Community to paid conversion: > 5%
-* Average revenue per user (ARPU): $50/month
-
-### 7.5 User Satisfaction
-* NPS score: > 40
-* Documentation page views: 10k+ monthly
-* Feature request upvotes: 100+ per quarter
-* User retention: > 60% after 3 months
+| Persona                          | Representative Story                                                            |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| **Beth** – Business Analyst      | “I drag-and-drop CRM + email nodes to send weekly performance reports—no code.” |
+| **Maya** – Marketing Manager     | “I use pre-built connectors to keep campaign lists in sync.”                    |
+| **Olivia** – Ops Engineer        | “I schedule nightly ETL pipelines so BI dashboards are ready by 06:00.”         |
+| **Diego** – Data Scientist       | “I chain AI nodes and webhooks to auto-classify inbound tickets.”               |
+| **Arun** – Automation Consultant | “I package reusable sub-workflows for clients via the marketplace.”             |
+| **Bao** – Backend Dev            | “I write Python SDK nodes that wrap our proprietary APIs.”                      |
+| **Ming** – ML Engineer           | “I build evaluation loops for complex AI pipelines.”                            |
 
 ---
 
-## 8 · Dependencies  
+## 4 · Functional Requirements
 
-| Layer | Dependency | Comment |
-|-------|------------|---------|
-|Frontend|`@xyflow/react`, React 18, Vite, ESLint|Visualization & build tooling|
-|Backend|FastAPI, PydanticAI, LangGraph, Celery, Redis, PostgreSQL|Core API & engine|
-|DevOps|Docker, Kubernetes, Helm, OpenTelemetry|Deployment & monitoring|
-|Auth|OAuth2 (Auth0) |SSO & credential vault|
+### 4.1 Workflow Editor
+
+- Drag-and-drop canvas (pan, zoom, snap-to-grid).
+- Live validation (type errors, dangling edges).
+- Undo/redo ≥ 20 steps, multi-select, inline search.
+- Mini-map; folder-style workflow organisation.
+- Sub-workflow collapse/expand.
+
+### 4.2 Fundamental Node Types
+
+- **Sources**: REST GET, DB query, webhook, cron.
+- **Sinks**: REST POST, file export, notifications.
+- **Processing**: Python block, data transform, agent node.
+- **Control-flow**: if/else, for-each, while.
+- **Integration**: sub-workflow call, chat handler.
+- **Custom**: signed plugin nodes.
+
+### 4.3 Workflow Management
+
+- Save, duplicate, import/export (JSON) with semantic version tags.
+- Template gallery (star, download count).
+- Test-run mode with breakpoints & variable inspector.
+- Run history: logs, metrics, traces.
+
+### 4.4 Execution Engine
+
+- LangGraph runner with parallel + conditional branches.
+- At-least-once delivery; retries & compensating flows.
+- Live logs via WebSocket; node-level metrics (latency, throughput, error codes).
+
+### 4.5 Integrations & Plugins
+
+- Built-ins: HTTP, Postgres/MySQL, S3, Google Sheets, Slack, OpenAI.
+- OAuth 2 credential vault (role-based access).
+- Python SDK + publishing pipeline (marketplace read-only in v1).
+
+### 4.6 Community Hub
+
+- Discover, vote, comment on community nodes.
+- Contributor leaderboard; moderation workflow.
 
 ---
 
-## 9 · Milestones & Timeline  
+## 5 · Non-Functional Requirements
 
-| Phase (Duration) | Key Deliverables | Gate / Exit Criteria |
-|------------------|------------------|----------------------|
-|**MVP** (May – Jun 2025)  |Editor core, 6 node types, single-worker engine, manual deploy|Team demo: build/run sample flow in ≤ 15 min|
-|**Beta** (Jul – Sep 2025) |Versioned workflows, template gallery, marketplace read-only, 10 built-in integrations|500 external beta users; error rate < 5 %|
-|**GA v1.0** (Oct – Dec 2025)|Full feature set, HA engine, plugin publish flow, RBAC|Uptime ≥ 99.9 %, pass security pen-test|
-|**Post-GA** (+) |AI-assisted builder, team collaboration, mobile viewer|Road-map updated Q1 2026|
-
----
-
-## 10 · Risks & Mitigations  
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-
+| Category      | Requirement (v1)                                                     |
+| ------------- | -------------------------------------------------------------------- |
+| Performance   | Editor p95 interaction ≤ 200 ms; engine ≥ 50 nodes / s per worker.   |
+| Scalability   | Horizontal auto-scaling; ≥ 1 000 concurrent executions, queue < 5 s. |
+| Availability  | Monthly uptime ≥ 99.9 % (excl. maintenance).                         |
+| Security      | OWASP Top 10, AES-256 secrets, SOC 2 roadmap.                        |
+| Compliance    | GDPR DPA.                                                            |
+| Observability | OpenTelemetry traces; Prometheus / Grafana dashboard.                |
+| I18n          | English UI; string catalog ready for locales.                        |
 
 ---
 
-## 11 · Appendices  
+## 6 · UX / UI
 
-* **A.** Figma wireframes link  
+- **Design language**: Light/Dark, WCAG 2.1 AA palette.
+- **Wireframes**: canvas, node inspector, console (Figma link).
+- Guided 3-step onboarding + “Create Demo Flow”.
+- Full shortcut reference drawer.
 
 ---
 
-### Living Document  
+## 7 · Success Metrics (first 6 months post-GA)
 
-This PRD is a **living, version-controlled artifact**. Updates require change-log entries and reviewer sign-off. Use Slack channel `#prd-aic-flow` for discussions; major decisions captured in the document history table above.
+| Pillar       | KPI                  | Target        |
+| ------------ | -------------------- | ------------- |
+| Community    | GitHub stars         | ≥ 1 000       |
+|              | Active contributors  | ≥ 50 / mo     |
+| Adoption     | Active workflows     | ≥ 1 000       |
+|              | Workflow executions  | ≥ 10 000 / mo |
+| Technical    | Test coverage        | > 80 %        |
+|              | Avg response time    | < 200 ms      |
+| Commercial   | Enterprise inquiries | ≥ 10 / mo     |
+| Satisfaction | NPS                  | > 40          |
+
+---
+
+## 8 · Dependencies
+
+| Layer         | Key Tech                                              | Purpose                |
+| ------------- | ----------------------------------------------------- | ---------------------- |
+| Frontend      | `@xyflow/react`, React 18, Vite                       | Canvas & build tooling |
+| Backend       | FastAPI, Pydantic, LangGraph, Celery, Redis, Postgres | Core API & engine      |
+| DevOps        | Docker, Kubernetes, Helm                              | Packaging & deployment |
+| Observability | OpenTelemetry, Prometheus                             | Tracing & metrics      |
+| Auth          | OAuth 2 / Auth0                                       | SSO, credential vault  |
+
+---
+
+## 9 · Milestones & Timeline
+
+| Phase       | Dates          | Deliverables                                                           | Exit Criteria                             |
+| ----------- | -------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
+| **MVP**     | May – Jun 2025 | Editor core; 6 node types; single-worker engine                        | Demo: build & run sample flow ≤ 15 min    |
+| **Beta**    | Jul – Sep 2025 | Versioning, template gallery, marketplace (read-only), 10 integrations | 500 external beta users; error rate < 5 % |
+| **GA 1.0**  | Oct – Dec 2025 | HA engine, plugin publish, RBAC                                        | Uptime ≥ 99.9 %; pass pen-test            |
+| **Post-GA** | 2026+          | AI-assisted builder, team collaboration, mobile viewer                 | Roadmap refresh Q1 2026                   |
+
+---
+
+## 10 · Risks & Mitigations
+
+| Risk                                   | Likelihood | Impact | Mitigation                                              |
+| -------------------------------------- | ---------: | -----: | ------------------------------------------------------- |
+| Under-scoped MVP features              |     Medium |   High | Strict scope lock; weekly scope review.                 |
+| Performance degradation at scale       |     Medium |   High | Early load tests; autoscaling POC in Beta.              |
+| Plugin security vulnerabilities        |        Low |   High | Signed plugins; automated vetting pipeline.             |
+| Dependence on LangGraph roadmap        |     Medium | Medium | Abstract engine layer; fallback to native DAG executor. |
+| Talent gap in dual-stack (TS + Python) |       High | Medium | Create starter templates & internal training.           |
+
+---
+
+## 11 · Appendices
+
+- **A.** Figma link – wireframes and component library.
+- **B.** API spec (OpenAPI 3.1) – see `/docs/openapi`.
+
+---
+
+> **Living Document** – Changes require a table entry above _and_ reviewer sign-off. Use Slack `#prd-aic-flow` for discussions; major decisions captured in document history.
